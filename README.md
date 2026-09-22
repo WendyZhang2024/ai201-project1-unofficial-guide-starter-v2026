@@ -21,7 +21,7 @@ Name: WendyZhang2024 | Corpus: campus_life
 
 ## What This Does
 
-This project builds a retrieval-augmented generation (RAG) system over the campus_life corpus. It answers common student-life questions—such as declaring a major, filing a grade appeal, changing a meal plan, or exploring study-abroad options—by retrieving relevant text chunks and using a large language model to produce grounded answers. The system is evaluated against five acceptance criteria using five test questions.
+This project builds a retrieval-augmented generation (RAG) system over the `campus_life`  corpus. It answers common student-life questions—such as declaring a major, filing a grade appeal, changing a meal plan, or exploring study-abroad options—by retrieving relevant text chunks and using a large language model to produce grounded answers. The system is evaluated against five acceptance criteria using five test questions.
 
 ## Chunking Strategy
 
@@ -111,18 +111,13 @@ Source: admin_meal_plan_changes.txt
 
 ## How I Used AI
 
-<!-- Two specific moments. For each: what you asked for, what came back, and
-     what you changed about it.
-
-     "I asked Claude to write the chunking function from my notes. It ignored
-     the overlap, so I added that myself" is the level of detail we're after.
-     "I used AI to help me code" is not.
-
-     Milestone 5. -->
+## How I Used AI
 
 **1.**
+I initially wrote a paragraph-based chunker (`split_documents`) but it produced a problematic 10-character isolated chunk ("On the add/drop deadline"). I asked Claude to diagnose the output. It identified that my code lacked a "heading vs. body" concept, which isolated short titles from their answers and fused multi-fact paragraphs together. Based on this diagnosis, I worked with DeepSeek to implement a buffer mechanism to merge short paragraphs into the following text. During testing, DeepSeek pointed out that a 30-character threshold still left a 31-character title isolated, so I raised the threshold to 50. This reduced my chunks from 271 to 179, increased the average length to 154 characters, and eliminated all fragments (shortest chunk became 57 characters).
 
 **2.**
+I collected best-distance scores for 5 in-scope questions (0.157–0.372) and 5 out-of-scope questions (0.787–0.923), and asked Claude where to set the cutoff. Claude pointed out the clean gap between the two groups and suggested picking 0.58 for symmetric margin (~0.2 on each side), while noting that boundary-straddling questions couldn't be validated with this sample. DeepSeek guided me to run concrete verifications: a normal question with distance 0.372 correctly passed the gate, while an out-of-scope question about the capital of Mongolia (0.787) was correctly rejected and triggered the "I don't have enough information" response. I documented this entire rationale and the caveat in my README.
 
 <!-- ── Stretch features ─────────────────────────────────────────────────────
      Doing one? Say so here BEFORE you start. A feature this README never
