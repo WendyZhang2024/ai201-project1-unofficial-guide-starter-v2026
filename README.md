@@ -119,10 +119,10 @@ I initially wrote a paragraph-based chunker (`split_documents`) but it produced 
 **2.**
 I collected best-distance scores for 5 in-scope questions (0.157–0.372) and 5 out-of-scope questions (0.787–0.923), and asked Claude where to set the cutoff. Claude pointed out the clean gap between the two groups and suggested picking 0.58 for symmetric margin (~0.2 on each side), while noting that boundary-straddling questions couldn't be validated with this sample. DeepSeek guided me to run concrete verifications: a normal question with distance 0.372 correctly passed the gate, while an out-of-scope question about the capital of Mongolia (0.787) was correctly rejected and triggered the "I don't have enough information" response. I documented this entire rationale and the caveat in my README.
 
-<!-- ── Stretch features ─────────────────────────────────────────────────────
-     Doing one? Say so here BEFORE you start. A feature this README never
-     claims earns nothing.
-     ───────────────────────────────────────────────────────────────────────── -->
+**Stretch feature:** Completed. I added chunk-level distance scores to the CLI output in `app.py`. Chunks near the cutoff (0.58) are flagged with ⚠️, and rejected chunks are flagged with ❌.
+Tested result: For "When do students declare a major?", top chunks scored 0.372 and 0.509 (⚠️), while the rest scored 0.589, 0.638, 0.680 (❌). For "What is the capital of Mongolia?", all 5 chunks scored 0.787–0.879 (❌) and the system correctly refused to answer.
+
+**Evaluated but dropped:** I also considered the "Answer caching improvements" stretch feature (`--no-cache` flag). After analyzing it, I realized that for a normal user, caching is always superior (faster, cheaper, identical answer). A `--no-cache` flag is a development/debugging tool. It forces a fresh model call when I am actively changing code, so I don't accidentally test against a stale cached response. Since this adds only developer convenience (not user value) and introduces more CLI argument complexity, I decided to skip it and focus on delivering a polished relevance-scoring feature instead.
 
 ---
 

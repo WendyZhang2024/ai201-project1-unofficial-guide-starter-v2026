@@ -211,7 +211,7 @@ def ask_pipeline(
     )
     decision = gate.check(results, threshold=threshold)
     if on_gate is not None:
-        on_gate(decision)
+        on_gate(decision, results)
 
     outcome = {
         "question": question,
@@ -248,9 +248,16 @@ def _ask_one(
     import gate
     from generate import GROUNDING_INSTRUCTION
 
-    def print_distances(decision):
+    def print_distances(decision, results):
         best = f"{decision.best_distance:.3f}"
         print(f"  (best distance {best}, cutoff {decision.threshold})")
+        for i, r in enumerate(results, 1):
+            warning = ""
+            if decision.best_distance <= r.distance < decision.threshold:
+                warning = " ⚠️ (approaching cutoff)"
+            elif r.distance >= decision.threshold:
+                warning = " ❌ (rejected)"
+            print(f"     #{i} distance={r.distance:.3f} source={r.source}{warning}")
 
     def print_prompt(prompt):
         print("\n" + "=" * 70)
