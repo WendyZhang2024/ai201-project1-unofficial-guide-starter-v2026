@@ -81,27 +81,33 @@ The good: cheapest housing tier by about $900 a year, and the singles are real s
 <!-- One complete question and answer, pasted as text, with the source line
      visible. Milestone 4. -->
 
-**Question:**
+**Question:** When can you change your meal plan tier?
 
-**Answer:**
+**Answer:** You can change your meal plan tier once, during the first ten days of the semester.
+Source: admin_meal_plan_changes.txt
 
 ```
 ```
 
-**My relevance cutoff:**
+**My relevance cutoff:** 0.58
 
-<!-- The number you set in config.py, and how you got there.
-
-     You ran five questions your corpus covers and the five in OUT_OF_SCOPE
-     that it clearly doesn't, and wrote down the best distance for each. What
-     did those two groups look like? Where was the gap? Put the actual numbers
-     here — the table below wants all ten rows.
-
-     Milestone 4. -->
+*   In-corpus questions (best distances): 0.372, 0.157, 0.268, 0.216, 0.234 (max = 0.372). Tested with 0.58 cutoff: correctly answered and passed the gate.
+*   Out-of-scope questions (best distances): 0.787, 0.923, 0.847, 0.824, 0.877 (min = 0.787). Tested with 0.58 cutoff: correctly refused ("I don't have enough information about that").
+*   There is a clean gap between 0.372 and 0.787. I chose 0.58 because it sits almost exactly in the middle of this gap (0.208 margin on the low side, 0.207 on the high side). This symmetric margin protects against both slightly harder in-scope questions (which might score higher) and slightly easier out-of-scope questions (which might score lower).
+*   Caveat: This cutoff is verified against my 5 in-scope and 5 out-of-scope examples. It may need revision if boundary-straddling or ambiguously phrased questions are introduced later.
 
 | Question | In corpus? | Best distance |
 |---|---|---|
-|  |  |  |
+| When do students declare a major? | Yes | 0.372 |
+| How many days do you have to raise a grade appeal? | Yes | 0.157 |
+| How many credit hours are required for graduation? | Yes | 0.268 |
+| When can you change your meal plan tier? | Yes | 0.216 |
+| When do study abroad applications open? | Yes | 0.234 |
+| What is the capital of Mongolia? | No | 0.787 |
+| How do I change the oil in a diesel engine? | No | 0.923 |
+| Who won the 1994 World Cup? | No | 0.847 |
+| What is the recommended dosage of ibuprofen? | No | 0.824 |
+| How do I write a for loop in Rust? | No | 0.877 |
 
 ## How I Used AI
 
