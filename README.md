@@ -1,6 +1,6 @@
 # The Unofficial Guide
 
-<!-- Replace this line with your name and which corpus you picked. -->
+Name: WendyZhang2024 | Corpus: campus_life
 
 > **This file is your submission.** Fill it in as you go — most sections get
 > written during the milestone that produces them, not at the end.
@@ -21,37 +21,22 @@
 
 ## What This Does
 
-<!-- Three or four sentences. Which corpus you picked, and the kinds of
-     questions your system answers. Write it for someone who has never seen
-     this repo.
-
-     Milestone 5. -->
+This project builds a retrieval-augmented generation (RAG) system over the campus_life corpus. It answers common student-life questions—such as declaring a major, filing a grade appeal, changing a meal plan, or exploring study-abroad options—by retrieving relevant text chunks and using a large language model to produce grounded answers. The system is evaluated against five acceptance criteria using five test questions.
 
 ## Chunking Strategy
 
-**Chunk size:**
-**Overlap:**
+**Chunk size:** Paragraph-based (dynamic), with a minimum merge threshold of 50 characters.
+**Overlap:** 0
 
-<!-- What about YOUR documents made you pick these numbers? Short posts and
-     long sectioned guides don't want the same chunking, and "800 seemed
-     reasonable" earns nothing. Point at something you noticed when you read
-     the documents in Milestone 1.
+When I first read the `campus_life` documents, I noticed they are mostly short posts and paragraphs rather than long continuous essays. The starter's fixed 800-character window created 271 chunks with an average length of only 101 characters, and worst of all, a shortest chunk of 10 characters. These tiny fragments were isolated titles that had lost their context, making them impossible to answer questions from.
 
-     If you changed your mind partway through, say so and say why. That's worth
-     more than pretending you got it right first time.
+So I replaced the fixed window with a paragraph split (`\n\n`) and added a buffer to merge any paragraph shorter than 50 characters into the following text. 
 
-     Milestone 3. -->
+I changed my mind partway through: I initially tried a 30-character threshold, but after testing, it truned out that a 31-character title (`PHYS 130 Mechanics — assessment`) still became an isolated chunk. Raising the threshold to 50 solved the issue. As a result, the total number of chunks dropped to 179, the average length increased to 154 characters, and the shortest chunk became 57 characters. This ensures every chunk is self-contained and answerable without losing context.
 
 ## Sample Chunks
 
-<!-- Five chunks, pasted as text. Label each one and name the file it came from
-     AND the function that produced it — the grader checks your code against
-     what you claim here.
 
-     `python app.py chunks -n 5` prints all three for you. Copy them straight
-     across.
-
-     Milestone 3. -->
 
 **Chunk 1** — source: `admin_add_drop_deadline.txt#0` — produced by: `chunker.py::split_documents`
 
