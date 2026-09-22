@@ -102,19 +102,43 @@ def split_documents(documents: list[Document]) -> list[Chunk]:
     for doc in documents:
         paragraphs = doc.text.split("\n\n")
         index = 0
+        buffer = ""  
+        
         for para in paragraphs:
-            text = para.strip()  
-            if not text:         
+            text = para.strip()
+            if not text:
                 continue
+            
+            
+            if len(text) < 50 and buffer == "":
+                buffer = text
+                continue
+            
+            
+            if buffer:
+                text = buffer + "\n\n" + text
+                buffer = ""
+                
             chunks.append(
                 Chunk(
                     text=text,
                     source=doc.source,
                     index=index,
-                    produced_by="chunker.py::split_documents", # 按说明要求修改
+                    produced_by="chunker.py::split_documents",
                 )
             )
             index += 1
+            
+        
+        if buffer:
+            chunks.append(
+                Chunk(
+                    text=buffer,
+                    source=doc.source,
+                    index=index,
+                    produced_by="chunker.py::split_documents",
+                )
+            )
     return chunks
 
 

@@ -53,37 +53,42 @@
 
      Milestone 3. -->
 
-**Chunk 1** — source: `thread_bike_commute.txt#0` — produced by: `chunker.py::split_documents`
+**Chunk 1** — source: `admin_add_drop_deadline.txt#0` — produced by: `chunker.py::split_documents`
 
 ```
-THREAD: Is a bike worth it for a 20 minute walk commute?
+On the add/drop deadline
+
+You can add a course through the end of the second week. Dropping is a longer window — through the end of week six — but a drop after week two shows as a W on your transcript. Nothing anywhere on the registrar's site says this plainly, and students find out from each other.
 ```
 
-**Chunk 2** — source: `thread_first_gen.txt#1` — produced by: `chunker.py::split_documents`
+
+**Chunk 2** — source: `course_cs_340_exams.txt#1` — produced by: `chunker.py::split_documents`
 
 ```
---- reply 1 (33 votes) ---
-The advising office has a specific programme and it is genuinely good, but it is opt-in and badly publicised. Ask for it by name.
+Start the term project in week three, not week eight; everyone learns this the hard way.
 ```
 
-**Chunk 3** — source: `thread_laptop_specs.txt#2` — produced by: `chunker.py::split_documents`
+
+**Chunk 3** — source: `course_phys_130_workload.txt#1` — produced by: `chunker.py::split_documents`
 
 ```
---- reply 2 (18 votes) ---
-Adding: the lab machines exist and are better than anything you'll buy. For the heavy assignments people just use those.
-```
-
-**Chunk 4** — source: `thread_parking.txt#0` — produced by: `chunker.py::split_documents`
+It's front-loaded — the first month is heavier than the rest, partly because you're learning the format.
 
 ```
-THREAD: Worth getting a parking permit?
-```
 
-**Chunk 5** — source: `thread_roommate_conflict.txt#3` — produced by: `chunker.py::split_documents`
+**Chunk 4** — source: `health_center.txt#0` — produced by: `chunker.py::split_documents`
 
 ```
---- reply 3 (33 votes) ---
-Write down specifics before the meeting. 'It's not working' is hard to act on; 'guests four nights a week past 2am' is not.
+The health centre
+
+Walk-in hours are 8am to 11am; everything after that is by appointment and appointments run about a week out. If something is urgent, go at 8am and wait rather than booking.
+
+```
+
+**Chunk 5** — source: `housing_morrow_house.txt#1` — produced by: `chunker.py::split_documents`
+
+```
+The good: cheapest housing tier by about $900 a year, and the singles are real singles.
 ```
 
 ## Sample Answer
