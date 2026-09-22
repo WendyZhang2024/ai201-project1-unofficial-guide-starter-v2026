@@ -86,8 +86,7 @@ The good: cheapest housing tier by about $900 a year, and the singles are real s
 **Answer:** You can change your meal plan tier once, during the first ten days of the semester.
 Source: admin_meal_plan_changes.txt
 
-```
-```
+
 
 **My relevance cutoff:** 0.58
 
@@ -109,7 +108,7 @@ Source: admin_meal_plan_changes.txt
 | What is the recommended dosage of ibuprofen? | No | 0.824 |
 | How do I write a for loop in Rust? | No | 0.877 |
 
-## How I Used AI
+
 
 ## How I Used AI
 
