@@ -60,3 +60,9 @@ You have fifteen days from the grade posting to raise a grade appeal (admin_grad
 
 ## Revision Notes
 No revisions were made. All criteria were measurable and measurable in a consistent manner.
+
+## Diagnoses
+
+### Criterion 4 MISSED (Target: 4 of 5, Result: 0 of 5)
+- **Failed stage:** Chunking (`chunker.py::split_documents`)
+- **Mechanism:** The current strategy splits strictly on paragraph breaks (`\n\n`) and only merges chunks smaller than 50 characters, which has no upper bound. Any paragraph that happens to be long in the source text becomes one long chunk untouched. This explains the wide, inconsistent chunk lengths observed (74–300 characters across the same question): short paragraphs get merged up, but long paragraphs are never split down. Since this is a property of the splitting logic itself rather than any single document, it affects all 5 test questions the same way rather than five separate failures.
