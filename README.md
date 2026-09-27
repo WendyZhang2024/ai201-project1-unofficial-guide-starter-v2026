@@ -243,17 +243,23 @@ Yes, partially.
 
 ## What's Still Broken
 
-<!-- For each criterion still missed after your fix: what you'd do about it,
-     and why you stopped where you did.
-
-     "I ran out of time" is fine if it's true. Pretending nothing is left is
-     not.
-
-     Milestone 5. -->
+**Criterion 4 (Retrieved chunks do not exceed 150 characters):**
+- **Status:** Still missed after the fix (score improved from 0/5 to 3/5, but the target remains 4/5).
+- **What I'd do about it:** The root cause is fixed, but there are two edge cases where a chunk still reached 160 characters (specifically in the questions "When do students declare a major?" and "When do study abroad applications open?"). This is likely due to a single sentence exceeding 150 characters, though I have not verified whether a buffer-merging edge case also contributes. To fix this, I would add a secondary fallback: if a single sentence still exceeds the limit, force-split it at the nearest comma rather than hard-cutting at the character count — a hard cut risks severing a word mid-token, while a comma-split at least respects a natural clause boundary. I would also lower `target_size` from 150 to 140 to create a small safety margin.
+- **Why I stopped here:** The primary structural flaw (no upper bound on chunk length) was diagnosed and fixed, moving the result from 0/5 to 3/5 and drastically improving retrieval precision (best distance for the "declare a major" question dropped from 0.37 to 0.19). The remaining fix is small and well-defined, but I prioritized verifying and documenting the improvement I'd already made — including rebuilding the index and re-running the full evaluation — over chasing the last two edge cases, given the time remaining in this unit.
 
 ## What I'd Do Differently
 
-<!-- Knowing what you know now — which of your five criteria would you write
-     differently, and why?
+**Regarding the criteria:**
+Knowing what I know now, I would rewrite Criterion 4 to be more flexible regarding natural language boundaries. Instead of requiring strict compliance for 4 out of 5 questions ("all chunks must be ≤ 150 characters"), I would specify a target like: "For at least 4 out of 5 questions, the average chunk length must be ≤ 150 characters, with no single chunk exceeding 200 characters." This still enforces the spirit of the short-chunk requirement but tolerates the fact that a single grammatical sentence occasionally runs slightly over 150 characters. A strict hard limit risks cutting sentences in half and losing the context Criterion 1 depends on. This also reflects something I didn't anticipate when I wrote the original criterion in Unit 1: I hadn't yet seen how much natural sentence length varies across a real corpus, so the 150-character target was set before I had evidence to calibrate it against.
 
-     Milestone 5. -->
+**Regarding the pipeline:**
+I would also rebuild the index immediately after modifying the chunking logic in the future — I initially forgot this step and had to run `python app.py index` after `check_chunks.py` kept returning stale, unchanged lengths despite my code edits.
+
+## How I Used AI
+
+In this unit, I used AI (specifically Deepseek and Claude) to assist with diagnosing the failed criterion. After my initial testing showed Criterion 4 failed (0/5), I shared the relevant `chunker.py` logic and the raw measurement data with the AI to assist in tracing the failure.
+
+The AI traced the failure to the chunking stage: my original logic only merged small paragraphs together but completely lacked an upper bound to split long paragraphs. It also pointed out that this was likely one root cause affecting all 5 questions rather than five separate failures, since the mechanism was the same across all of them. I verified this independently by reading the code myself and running `check_chunks.py` to measure the actual chunk lengths before accepting the diagnosis.
+
+I also used AI to help draft a sentence-aware splitting strategy using `re.split`. But I was responsible for integrating the fix into my codebase, rebuilding the vector index (`python ingest.py`), running the full evaluation (`run_eval.py --label after`), and accurately reporting the resulting data (0/5 to 3/5), including the fact that the fix did not fully reach the 4/5 target.
