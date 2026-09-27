@@ -1,4 +1,4 @@
-# This is my first commit.
+
 """
 Stage 2 of the pipeline: splitting documents into chunks.
 
@@ -24,7 +24,7 @@ your pipeline, not giving up.
 """
 
 from dataclasses import dataclass
-
+import re
 import config
 from ingest import Document
 
@@ -83,53 +83,54 @@ def fallback_split(
 
 def split_documents(documents: list[Document]) -> list[Chunk]:
     """
-    Split documents into chunks. ⚠️ REPLACE THE BODY OF THIS IN MILESTONE 3.
+    Split documents into chunks.
 
-    Right now it just calls the fallback. That is the plain, generic behaviour
-    the brief is talking about.
-
-    When you write your own strategy, set `produced_by` to
-    "chunker.py::split_documents" so your README's Sample Chunks section names
-    the right function. `app.py chunks` prints that string for you.
-
-    Things worth thinking about before you write any code:
-      - Are your documents short posts or long guides?
-      - Is the useful information in one sentence, or spread over a paragraph?
-      - Would splitting on paragraph breaks keep more thoughts intact than
-        splitting on a character count?
+    Strategy: split on paragraph breaks first, carrying short lead-ins
+    (like a one-line heading) forward into the next paragraph — same as
+    before. But campus_life posts often bundle several distinct facts into
+    one paragraph with no internal blank line (e.g. "On the add/drop
+    deadline" followed by one paragraph covering add, drop, and the
+    transcript note). So each paragraph is further split on sentence
+    boundaries, and consecutive sentences are packed together up to
+    ~150 characters — matching criterion 4's own target — instead of
+    letting one long paragraph become one oversized chunk.
     """
+    target_size = 150
+
     chunks: list[Chunk] = []
     for doc in documents:
-        paragraphs = doc.text.split("\n\n")
+        paragraphs = [p.strip() for p in doc.text.split("\n\n") if p.strip()]
         index = 0
-        buffer = ""  
-        
+        buffer = ""
+
         for para in paragraphs:
-            text = para.strip()
-            if not text:
+            if len(para) < 50 and buffer == "":
+                buffer = para
                 continue
-            
-            
-            if len(text) < 50 and buffer == "":
-                buffer = text
-                continue
-            
-            
-            if buffer:
-                text = buffer + "\n\n" + text
-                buffer = ""
-                
-            chunks.append(
-                Chunk(
-                    text=text,
-                    source=doc.source,
-                    index=index,
-                    produced_by="chunker.py::split_documents",
-                )
-            )
-            index += 1
-            
-        
+
+            sentences = re.split(r"(?<=[.!?])\s+", para)
+
+            piece = buffer
+            buffer = ""
+            for sentence in sentences:
+                candidate = f"{piece} {sentence}".strip() if piece else sentence
+                if len(candidate) <= target_size or not piece:
+                    piece = candidate
+                else:
+                    chunks.append(
+                        Chunk(
+                            text=piece,
+                            source=doc.source,
+                            index=index,
+                            produced_by="chunker.py::split_documents",
+                        )
+                    )
+                    index += 1
+                    piece = sentence
+
+            if piece:
+                buffer = piece
+
         if buffer:
             chunks.append(
                 Chunk(
@@ -139,6 +140,7 @@ def split_documents(documents: list[Document]) -> list[Chunk]:
                     produced_by="chunker.py::split_documents",
                 )
             )
+
     return chunks
 
 

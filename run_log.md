@@ -1,3 +1,5 @@
+### Before Run Log
+
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
 | 1. Retrieved chunks contain the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
@@ -16,9 +18,10 @@ Students declare a major at the end of their second semester, or later if needed
 
 ### Criterion 2 Real Output
 Produced by `generate.py::answer_from_chunks` (via `run_eval.py::run_once`).
-​```text
-Students declare a major at the end of their second semester, or later if needed (admin_declaring_a_major.txt).
-​```
+```text
+You can change your meal plan tier once, during the first ten days of the semester.
+Source: admin_meal_plan_changes.txt
+```
 
 ### Criterion 3 Real Output
 Produced by `run_eval.py::check_out_of_scope`.
@@ -66,3 +69,38 @@ No revisions were made. All criteria were measurable and measurable in a consist
 ### Criterion 4 MISSED (Target: 4 of 5, Result: 0 of 5)
 - **Failed stage:** Chunking (`chunker.py::split_documents`)
 - **Mechanism:** The current strategy splits strictly on paragraph breaks (`\n\n`) and only merges chunks smaller than 50 characters, which has no upper bound. Any paragraph that happens to be long in the source text becomes one long chunk untouched. This explains the wide, inconsistent chunk lengths observed (74–300 characters across the same question): short paragraphs get merged up, but long paragraphs are never split down. Since this is a property of the splitting logic itself rather than any single document, it affects all 5 test questions the same way rather than five separate failures.
+
+## Improvement
+
+- **Change made:** Replaced `chunker.py::split_documents` with a sentence-aware splitter that enforces a 150-character maximum chunk size.
+- **Failure it was meant to fix:** Criterion 4 (Retrieved chunks do not exceed 150 characters), diagnosed as caused by the chunking stage lacking an upper bound on paragraph length.
+
+### After Run Log
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. Retrieved chunks contain the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. The relevance gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Retrieved chunks do not exceed 150 characters | 4 of 5 | 3/5 | 3/5 | 3/5 | MISSED |
+| 5. Final answers contain expected keywords | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+
+### Criterion 4 — real output (the chunks still over the limit)
+
+Produced by `chunker.py::split_documents` (via `store.py::search`), from `check_chunks.py`.
+
+The two questions that still have one oversized chunk each — "When do students declare a major?" and "When do study abroad applications open?" — both have a chunk at exactly 160 characters. Both correspond to single sentences from the source documents that are themselves longer than 150 characters, so the sentence-level splitter has nowhere left to cut without breaking a sentence in half:
+
+```text
+Chunk length: 160 chars
+```
+
+### Did the change help?
+
+**Comparison based on the numbers from both run logs:**
+
+- **Criterion 4:** Before = 0/5 (MISSED). After = 3/5 (MISSED). The chunking change partially improved the result, increasing the score from 0/5 to 3/5. It fixed the issue for 3 out of 5 questions, but two questions (declare a major, study abroad) still have a single chunk at 160 characters, falling short of the 4/5 target.
+- **Criterion 1:** Before = 5/5 (MET). After = 5/5 (MET). The smaller chunks did not harm retrieval accuracy. Best distances also decreased (e.g., declare a major went from 0.37 to 0.19), consistent with smaller, more topically-focused chunks producing embeddings closer to the question — though this is a side effect of chunk size, not a separate improvement to retrieval itself.
+- **Other Criteria:** Criteria 2, 3, and 5 remained at 5/5 (MET). No regressions were observed.
+
+**Conclusion:** The improvement directly addressed the diagnosed failure and moved Criterion 4 from 0/5 to 3/5. However, it did not fully meet the 4/5 target because two chunks remained slightly over the 150-character limit, each corresponding to a single source sentence longer than the target itself. No other criteria were negatively affected by the change. The change is considered a partial success.

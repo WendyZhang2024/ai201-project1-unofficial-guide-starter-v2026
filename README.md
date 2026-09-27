@@ -127,103 +127,119 @@ Tested result: For "When do students declare a major?", top chunks scored 0.372 
 
 # Unit 2
 
-<!-- These sections get ADDED to what's already above. Don't delete or rewrite
-     unit 1 — the point is that someone can see what you said before you knew
-     how it went. -->
+The full run logs, verdicts, diagnoses, and the before/after improvement analysis are documented in [run_log.md](./run_log.md).
 
 ## Run Log — Before
 
-<!-- Your five criteria, three runs each. `python run_eval.py --label before`
-     runs the questions, puts the OUT_OF_SCOPE ones through the gate, and
-     writes it all into results/ for you. Targets come from criteria.md; the
-     verdict column is your call.
 
-     Criterion 3 is measured in one deterministic pass rather than three, so
-     the same number goes in all three run columns. That's correct, not lazy.
-
-     Milestone 1. -->
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+| 1. Retrieved chunks contain the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. The relevance gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Retrieved chunks do not exceed 150 characters | 4 of 5 | 0/5 | 0/5 | 0/5 | MISSED |
+| 5. Final answers contain expected keywords | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
 
-<!-- Underneath, paste the REAL output for each criterion from one of your
-     runs — the actual text your system produced, not a description of it.
-     Name the file and function that produced it. -->
+### Criterion 1 Real Output
+Produced by `generate.py::answer_from_chunks` (via `run_eval.py::run_once`).
+​```text
+Students declare a major at the end of their second semester, or later if needed (admin_declaring_a_major.txt).
+​```
+
+### Criterion 2 Real Output
+Produced by `generate.py::answer_from_chunks` (via `run_eval.py::run_once`).
+```text
+You can change your meal plan tier once, during the first ten days of the semester.
+Source: admin_meal_plan_changes.txt
+```
+
+### Criterion 3 Real Output
+Produced by `run_eval.py::check_out_of_scope`.
+
+| Out-of-scope question | Best distance | Gate |
+|---|---|---|
+| What is the capital of Mongolia? | 0.787 | refused |
+| How do I change the oil in a diesel engine? | 0.923 | refused |
+| Who won the 1994 World Cup? | 0.847 | refused |
+| What is the recommended dosage of ibuprofen for a headache? | 0.824 | refused |
+| How do I write a for loop in Rust? | 0.877 | refused |
+
+-> gate refused 5 of 5
+
+### Criterion 4 Real Output
+Produced by `check_chunks.py` (chunks retrieved via `store.py::search`).
+​```text
+Question: When do students declare a major?
+  Chunk 1 length: 274 chars
+  Chunk 2 length: 259 chars
+  Chunk 3 length: 282 chars
+  Chunk 4 length: 300 chars
+  Chunk 5 length: 74 chars
+​```
+
+### Criterion 5 Real Output
+Produced by `generate.py::answer_from_chunks` (via `run_eval.py::run_once`).
+​```text
+You have fifteen days from the grade posting to raise a grade appeal (admin_grade_appeals.txt).
+​```
 
 ## Verdicts
 
-<!-- MET or MISSED for each of the five, against the target you wrote last
-     unit — not a new one. Plus a sentence on how you decided. That sentence
-     matters most where it was close.
+### Verdict Rationale
 
-     If your target said 4 of 5 and your runs came out 4, 3, 4, that's a MISS.
-     The target has to hold, not show up occasionally.
+- **Criterion 1 (MET):** Target was 4 of 5. My run log shows that all five test questions retrieved chunks containing the answer (5/5 across three runs), which exceeds the target.
+- **Criterion 2 (MET):** Target was 5 of 5. Every generated answer explicitly cited its source document in the text, which meets the strict requirement.
+- **Criterion 3 (MET):** Target was 4 of 5. The gate deterministically refused all five out-of-corpus questions (5/5), exceeding the target.
+- **Criterion 4 (MISSED):** Target was 4 of 5. I measured the retrieved chunks for each question and found that in every one of the 5 test questions, at least one of the 5 retrieved chunks exceeded 150 characters — meaning 0 of 5 questions had all their chunks within the limit (0/5 across three runs). The target was not met. This is a genuine miss, not a broken criterion — the 150-character check was fully measurable using `check_chunks.py`, so no revision was made. The number stays as recorded and will be diagnosed and addressed as an improvement target.
+- **Criterion 5 (MET):** Target was 4 of 5. I checked the `expects` field in `questions.py` and confirmed all five answers contained their required keywords (5/5), exceeding the target.
 
-     Milestone 2. -->
+### Revision Notes
+No revisions were made. All criteria were measurable and measurable in a consistent manner.
 
 | # | Criterion | Verdict | How I decided |
 |---|---|---|---|
-| 1 |  |  |  |
-| 2 |  |  |  |
-| 3 |  |  |  |
-| 4 |  |  |  |
-| 5 |  |  |  |
+| 1 | Retrieved chunks contain the answer (target: 4 of 5) | MET | Across all three runs, every one of the 5 test questions produced an answer stating the correct fact (e.g. "fifteen days," "120 credit hours"), consistent across runs — 5/5 each time, above the 4/5 target. |
+| 2 | Every answer names a source (target: 5 of 5) | MET | Checked each of the 15 answers (5 questions × 3 runs) for a literal filename or `Source:` line; every single one included it, with no exceptions. |
+| 3 | The relevance gate stops out-of-corpus questions (target: 4 of 5) | MET | Ran the 5 `OUT_OF_SCOPE` questions once through `run_eval.py::check_out_of_scope`; all 5 best-distances exceeded the 0.58 threshold, so the gate refused all 5. Measured once since retrieval and the gate are deterministic — the same 5/5 applies to all three run columns. |
+| 4 |  Measured actual retrieved chunk lengths with `check_chunks.py`. In every one of the 5 test questions, at least one of the 5 retrieved chunks exceeded 150 characters, so 0 of 5 questions had all their chunks within the limit — well short of the 4 of 5 target. |
+| 5 | Final answers contain expected keywords (target: 4 of 5) | MET | Compared each answer's text against the `expects` field in `questions.py` for all 5 questions across all 3 runs; the required keyword (e.g. "second semester," "October") appeared verbatim in every case — 5/5 each run. |
 
 ## Diagnoses
 
-<!-- For each miss: which stage caused it, and how. The stage alone isn't
-     enough — you need the mechanism.
-
-     Not a diagnosis: "Question 3 didn't work."
-     A diagnosis:     "Question 3 asks about laundry costs. The answer is in
-                       one sentence that got split across two chunks, so
-                       neither chunk on its own contains it."
-
-     The five stages: loading → chunking → embedding → retrieval → generation.
-
-     Look for a pattern. If three misses all ask about numbers, that's one
-     problem, not three.
-
-     Missed nothing? Say so, then say honestly whether your targets were set
-     low, and which one you'd tighten and to what.
-
-     Milestone 3. -->
+### Criterion 4 MISSED (Target: 4 of 5, Result: 0 of 5)
+- **Failed stage:** Chunking (`chunker.py::split_documents`)
+- **Mechanism:** The current strategy splits strictly on paragraph breaks (`\n\n`) and only merges chunks smaller than 50 characters, which has no upper bound. Any paragraph that happens to be long in the source text becomes one long chunk untouched. This explains the wide, inconsistent chunk lengths observed (74–300 characters across the same question): short paragraphs get merged up, but long paragraphs are never split down. Since this is a property of the splitting logic itself rather than any single document, it affects all 5 test questions the same way rather than five separate failures.
 
 ## The Improvement
 
-**What I changed:**
+**What I changed:** Replaced `chunker.py::split_documents` with a sentence-aware splitter that enforces a 150-character maximum chunk size.
 
-**Why I picked it:**
-
-<!-- Connect it to a specific diagnosis above in one sentence. If you can't,
-     you picked a fix because it sounded impressive. -->
+**Why I picked it:** The diagnosis pointed directly at the chunking stage (`chunker.py::split_documents`) lacking an upper bound on paragraph length, which directly caused Criterion 4 to fail (0/5).
 
 ### Run Log — After
 
-<!-- Same format, same five criteria, three runs each.
-     `python run_eval.py --label after` -->
+
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+| 1. Retrieved chunks contain the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. The relevance gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Retrieved chunks do not exceed 150 characters | 4 of 5 | 3/5 | 3/5 | 3/5 | MISSED |
+| 5. Final answers contain expected keywords | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
 
 **Did it help?**
 
-<!-- Say plainly whether it did, and how you know. If it made things worse,
-     say that — a change that backfired, honestly reported, earns full credit
-     and is more interesting than one that worked. What matters is that you can
-     tell.
+Yes, partially.
 
-     Milestone 4. -->
+***Comparison based on the numbers from both run logs:***
+
+- **Criterion 4:** Before = 0/5 (MISSED). After = 3/5 (MISSED). The chunking change partially improved the result, increasing the score from 0/5 to 3/5. It fixed the issue for 3 out of 5 questions, but two questions (declare a major, study abroad) still have a single chunk at 160 characters, falling short of the 4/5 target.
+- **Criterion 1:** Before = 5/5 (MET). After = 5/5 (MET). The smaller chunks did not harm retrieval accuracy. Best distances also decreased (e.g., declare a major went from 0.37 to 0.19), consistent with smaller, more topically-focused chunks producing embeddings closer to the question — though this is a side effect of chunk size, not a separate improvement to retrieval itself.
+- **Other Criteria:** Criteria 2, 3, and 5 remained at 5/5 (MET). No regressions were observed.
+
+**Conclusion:** The improvement directly addressed the diagnosed failure and moved Criterion 4 from 0/5 to 3/5. However, it did not fully meet the 4/5 target because two chunks remained slightly over the 150-character limit, each corresponding to a single source sentence longer than the target itself. No other criteria were negatively affected by the change. The change is considered a partial success.
 
 ## What's Still Broken
 
