@@ -49,3 +49,14 @@ Produced by `generate.py::answer_from_chunks` (via `run_eval.py::run_once`).
 ​```text
 You have fifteen days from the grade posting to raise a grade appeal (admin_grade_appeals.txt).
 ​```
+
+## Verdict Rationale
+
+- **Criterion 1 (MET):** Target was 4 of 5. My run log shows that all five test questions retrieved chunks containing the answer (5/5 across three runs), which exceeds the target.
+- **Criterion 2 (MET):** Target was 5 of 5. Every generated answer explicitly cited its source document in the text, which meets the strict requirement.
+- **Criterion 3 (MET):** Target was 4 of 5. The gate deterministically refused all five out-of-corpus questions (5/5), exceeding the target.
+- **Criterion 4 (MISSED):** Target was 4 of 5. I measured the retrieved chunks for each question and found that in every one of the 5 test questions, at least one of the 5 retrieved chunks exceeded 150 characters — meaning 0 of 5 questions had all their chunks within the limit (0/5 across three runs). The target was not met. This is a genuine miss, not a broken criterion — the 150-character check was fully measurable using `check_chunks.py`, so no revision was made. The number stays as recorded and will be diagnosed and addressed as an improvement target.
+- **Criterion 5 (MET):** Target was 4 of 5. I checked the `expects` field in `questions.py` and confirmed all five answers contained their required keywords (5/5), exceeding the target.
+
+## Revision Notes
+No revisions were made. All criteria were measurable and measurable in a consistent manner.
