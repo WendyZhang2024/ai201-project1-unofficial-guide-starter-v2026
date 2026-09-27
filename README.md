@@ -127,6 +127,8 @@ Tested result: For "When do students declare a major?", top chunks scored 0.372 
 
 # Unit 2
 
+**Stretch Feature:** I am attempting a second measured improvement.
+
 The full run logs, verdicts, diagnoses, and the before/after improvement analysis are documented in [run_log.md](./run_log.md).
 
 ## Run Log — Before
