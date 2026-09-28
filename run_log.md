@@ -104,3 +104,45 @@ Chunk length: 160 chars
 - **Other Criteria:** Criteria 2, 3, and 5 remained at 5/5 (MET). No regressions were observed.
 
 **Conclusion:** The improvement directly addressed the diagnosed failure and moved Criterion 4 from 0/5 to 3/5. However, it did not fully meet the 4/5 target because two chunks remained slightly over the 150-character limit, each corresponding to a single source sentence longer than the target itself. No other criteria were negatively affected by the change. The change is considered a partial success.
+
+## Second Improvement (Stretch)
+
+**Declared change:** From the Milestone 4 menu, I chose to tune `top_k` (the number of chunks retrieved per question), making this a new experiment.
+
+**What I changed:** Lowered `config.py::TOP_K` from 5 to 3.
+
+**Why I picked it:** Criterion 4 was still MISSED after the chunker fix (3/5) because two questions each retrieved one chunk over 150 characters among their top-5 results. I wanted to test whether narrowing the retrieval window would exclude those oversized chunks — and whether doing so would cost anything on Criterion 1, which depends on the correct chunk actually being retrieved.
+
+### Run Log — top_k = 3
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. Retrieved chunks contain the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. The relevance gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Retrieved chunks do not exceed 150 characters | 4 of 5 | 4/5 | 4/5 | 4/5 | MET |
+| 5. Final answers contain expected keywords | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+
+#### Criterion 4 — real output (top_k = 3)
+Produced by `check_chunks.py` (chunks retrieved via `store.py::search`, `top_k=3`).
+```text
+Question: When do students declare a major?
+  Chunk 1 length: 97 chars
+  Chunk 2 length: 160 chars
+  Chunk 3 length: 107 chars
+
+Question: When do study abroad applications open?
+  Chunk 1 length: 81 chars
+  Chunk 2 length: 122 chars
+  Chunk 3 length: 142 chars
+```
+
+### Did it help?
+
+**Comparison based on the numbers from the top_k=5 (after-fix) and top_k=3 run logs:**
+
+- **Criterion 4:** top_k=5 → 3/5 (MISSED). top_k=3 → 4/5 (**MET**). Narrowing the retrieval window pushed the "study abroad" question's oversized chunk (previously ranked 4th–5th) outside the top-3 results, so it no longer counts toward the failure. The "declare a major" question still has its 160-character chunk ranked within the top 3, so it remains the one unresolved case.
+- **Criterion 1:** top_k=5 → 5/5 (MET). top_k=3 → 5/5 (MET). No regression, the correct chunk for every question was still within the top 3 closest matches, so nothing was lost by retrieving fewer candidates.
+- **Other Criteria:** Criteria 2, 3, and 5 remained at 5/5 (MET) with no change.
+
+**Conclusion:** Criterion 4 numerically improved from MISSED to MET (3/5 → 4/5) with no cost to any other criterion. However, I don't consider this a genuine fix to the underlying problem: the oversized chunk itself still exists in the index. It simply fell outside the smaller retrieval window for one of the two previously-failing questions. The "declare a major" question still surfaces it within the top 3, showing the improvement is sensitive to which question is asked rather than to the chunk length itself being resolved. The real fix remains the one described in "What's Still Broken" (splitting sentences that exceed 150 characters on their own): reducing `top_k` is a side effect that happens to help in this specific case, not a structural solution.
